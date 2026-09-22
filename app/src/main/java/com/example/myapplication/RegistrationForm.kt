@@ -131,6 +131,24 @@ fun RegistrationForm(modifier: Modifier = Modifier) {
                 selectedYear = y
             }
         )
+
+        Button(
+            onClick = {
+                // Расчёт знака зодиака
+                playerData = PlayerData(
+                    fullName = fullName,
+                    gender = gender,
+                    course = course,
+                    difficulty = difficulty.toInt(),
+                    birthDate = "%02d.%02d.%04d".format(selectedDay, selectedMonth + 1, selectedYear),
+                    // Знак зодиака
+                    // Иконка знака
+                )
+            },
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+        ){
+            Text("Зарегистрировать")
+        }
     }
 }
 
