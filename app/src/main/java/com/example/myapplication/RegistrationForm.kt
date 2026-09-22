@@ -77,6 +77,39 @@ fun RegistrationForm(modifier: Modifier = Modifier) {
                 }
             }
         }
+        
+        Text(text = "Курс:", fontWeight = FontWeight.SemiBold)
+        ExposedDropdownMenuBox(
+            expanded = courseExpanded,
+            onExpandedChange = { courseExpanded = !courseExpanded }
+        ) {
+            OutlinedTextField(
+                value = course,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Выберите курс") },
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = courseExpanded)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor()
+            )
+            ExposedDropdownMenu(
+                expanded = courseExpanded,
+                onDismissRequest = { courseExpanded = false }
+            ) {
+                courses.forEach { item ->
+                    DropdownMenuItem(
+                        text = { Text(item) },
+                        onClick = {
+                            course = item
+                            courseExpanded = false
+                        }
+                    )
+                }
+            }
+        }
 }
 
 @Preview(showBackground = true)
