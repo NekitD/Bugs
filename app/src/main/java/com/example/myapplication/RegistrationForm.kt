@@ -55,6 +55,28 @@ fun RegistrationForm(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
+
+        Text(text = "Пол:", fontWeight = FontWeight.SemiBold)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            genders.forEach { option ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.selectable(
+                        selected = (gender == option),
+                        onClick = { gender = option }
+                    )
+                ) {
+                    RadioButton(
+                        selected = (gender == option),
+                        onClick = { gender = option }
+                    )
+                    Text(text = option)
+                }
+            }
+        }
 }
 
 @Preview(showBackground = true)
