@@ -93,7 +93,7 @@ fun RegistrationForm(modifier: Modifier = Modifier) {
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .menuAnchor()
+                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
             )
             ExposedDropdownMenu(
                 expanded = courseExpanded,
@@ -121,6 +121,15 @@ fun RegistrationForm(modifier: Modifier = Modifier) {
             valueRange = 1f..10f,
             steps = 8,
             modifier = Modifier.fillMaxWidth()
+        )
+
+        Text(text = "Дата рождения:", fontWeight = FontWeight.SemiBold)
+        DataPicker(day = selectedDay, month = selectedMonth, year = selectedYear,
+            onDateSelected = { d, m, y ->
+                selectedDay = d
+                selectedMonth = m
+                selectedYear = y
+            }
         )
     }
 }
