@@ -33,6 +33,28 @@ fun RegistrationForm(modifier: Modifier = Modifier) {
 
     val courses = listOf("1 курс", "2 курс", "3 курс", "4 курс", "Магистратура", "Аспирантура")
     val genders = listOf("Мужской", "Женский")
+    
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text(
+            text = "Регистрационная форма игрока",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        OutlinedTextField(
+            value = fullName,
+            onValueChange = { fullName = it },
+            label = { Text("ФИО") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
 }
 
 @Preview(showBackground = true)
