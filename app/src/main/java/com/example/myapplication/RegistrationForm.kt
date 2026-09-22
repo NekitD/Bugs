@@ -77,7 +77,7 @@ fun RegistrationForm(modifier: Modifier = Modifier) {
                 }
             }
         }
-        
+
         Text(text = "Курс:", fontWeight = FontWeight.SemiBold)
         ExposedDropdownMenuBox(
             expanded = courseExpanded,
@@ -122,6 +122,7 @@ fun RegistrationForm(modifier: Modifier = Modifier) {
             steps = 8,
             modifier = Modifier.fillMaxWidth()
         )
+    }
 }
 
 @Preview(showBackground = true)
