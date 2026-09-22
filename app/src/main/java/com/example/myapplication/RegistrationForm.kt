@@ -110,6 +110,18 @@ fun RegistrationForm(modifier: Modifier = Modifier) {
                 }
             }
         }
+
+        Text(
+            text = "Уровень сложности: ${difficulty.toInt()}",
+            fontWeight = FontWeight.SemiBold
+        )
+        Slider(
+            value = difficulty,
+            onValueChange = { difficulty = it },
+            valueRange = 1f..10f,
+            steps = 8,
+            modifier = Modifier.fillMaxWidth()
+        )
 }
 
 @Preview(showBackground = true)
