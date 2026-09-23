@@ -2,6 +2,7 @@ package com.example.myapplication
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
@@ -148,6 +149,29 @@ fun RegistrationForm(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
         ){
             Text("Зарегистрировать")
+        }
+
+        playerData?.let{
+            data -> Card(
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ){
+                Column(modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ){
+                    Text("Данные игрока:", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text(text = "ФИО: ${data.fullName}")
+                    Text(text = "Пол: ${data.gender}")
+                    Text(text = "Курс: ${data.course}")
+                    Text(text = "Уровень сложности: ${data.difficulty}")
+                    Text(text = "Дата рождения: ${data.birthDate}")
+                    Text(text = "Знак зодиака: ${data.zodiacSign}", fontWeight = FontWeight.SemiBold)
+                    if(data.zodiacSym.isNotEmpty()){
+                        Text(text = data.zodiacSym, fontSize = 72.sp, modifier = Modifier.align(Alignment.CenterHorizontally))
+                    }
+                }
+
+            }
         }
     }
 }
