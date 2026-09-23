@@ -134,15 +134,15 @@ fun RegistrationForm(modifier: Modifier = Modifier) {
 
         Button(
             onClick = {
-                // Расчёт знака зодиака
+                val (zodiacName, zodiacRes) = getZodiacSign(selectedDay, selectedMonth + 1)
                 playerData = PlayerData(
                     fullName = fullName,
                     gender = gender,
                     course = course,
                     difficulty = difficulty.toInt(),
                     birthDate = "%02d.%02d.%04d".format(selectedDay, selectedMonth + 1, selectedYear),
-                    // Знак зодиака
-                    // Иконка знака
+                    zodiacSign = zodiacName,
+                    zodiacSym = zodiacRes
                 )
             },
             modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
