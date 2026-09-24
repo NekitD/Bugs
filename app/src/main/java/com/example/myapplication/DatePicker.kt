@@ -28,7 +28,7 @@ fun DataPicker(day: Int, month: Int, year: Int, onDateSelected: (day: Int, month
             Calendar.getInstance().apply() {set(year, month, day)}.timeInMillis})
 
     OutlinedButton(onClick = {showDialog = true}, modifier = modifier.fillMaxWidth()){
-        Text("Выбрать дату: %02d.%02d.%04d)".format(day, month + 1, year))
+        Text("Выбрать дату: %02d.%02d.%04d".format(day, month + 1, year))
     }
 
     if(showDialog) {
