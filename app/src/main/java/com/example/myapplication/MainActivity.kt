@@ -58,7 +58,7 @@ fun MainScreen() {
             }
             when(selectedTab){
                 0 -> RegistrationForm()
-                //1 -> "СДЕЛАТЬ ПРАВИЛА"
+                1 -> RulesText()
                 2 -> AuthorsList()
                 //3 -> "СДЕЛАТЬ НАСТРОЙКИ"
             }
