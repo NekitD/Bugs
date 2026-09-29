@@ -136,15 +136,21 @@ fun RegistrationForm(modifier: Modifier = Modifier) {
         Button(
             onClick = {
                 val (zodiacName, zodiacRes) = getZodiacSign(selectedDay, selectedMonth + 1)
-                playerData = PlayerData(
-                    fullName = fullName,
-                    gender = gender,
-                    course = course,
-                    difficulty = difficulty.toInt(),
-                    birthDate = "%02d.%02d.%04d".format(selectedDay, selectedMonth + 1, selectedYear),
-                    zodiacSign = zodiacName,
-                    zodiacSym = zodiacRes
-                )
+                if(fullName.isNotEmpty()) {
+                    playerData = PlayerData(
+                        fullName = fullName,
+                        gender = gender,
+                        course = course,
+                        difficulty = difficulty.toInt(),
+                        birthDate = "%02d.%02d.%04d".format(
+                            selectedDay,
+                            selectedMonth + 1,
+                            selectedYear
+                        ),
+                        zodiacSign = zodiacName,
+                        zodiacSym = zodiacRes
+                    )
+                }
             },
             modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
         ){
@@ -156,7 +162,7 @@ fun RegistrationForm(modifier: Modifier = Modifier) {
                 modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ){
-                Column(modifier = Modifier.padding(16.dp),
+                Column(modifier = Modifier.padding(16.dp).align(Alignment.CenterHorizontally),
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ){
                     Text("Данные игрока:", fontSize = 18.sp, fontWeight = FontWeight.Bold)
