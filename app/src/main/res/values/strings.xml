@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Bugs</string>
+    <string name="author_one_name">Andronov Artyom</string>
+    <string name="author_two_name">Dorogin Nikita</string>
 </resources>

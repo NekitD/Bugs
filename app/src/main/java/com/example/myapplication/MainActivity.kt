@@ -55,12 +55,12 @@ fun MainScreen() {
                         text = { Text(title) }
                     )
                 }
-                when(selectedTab){
-                    0 -> RegistrationForm()
-                    1 -> "СДЕЛАТЬ ПРАВИЛА"
-                    2 -> AuthorsList()
-                    3 -> "СДЕЛАТЬ НАСТРОЙКИ"
-                }
+            }
+            when(selectedTab){
+                0 -> RegistrationForm()
+                //1 -> "СДЕЛАТЬ ПРАВИЛА"
+                2 -> AuthorsList()
+                //3 -> "СДЕЛАТЬ НАСТРОЙКИ"
             }
         }
     }
