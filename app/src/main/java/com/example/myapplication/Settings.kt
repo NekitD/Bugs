@@ -29,7 +29,57 @@ fun Settings(modifier: Modifier = Modifier) {
     var maxBugs by remember { mutableIntStateOf(5) }
     var bonusInterval by remember { mutableFloatStateOf(15f) }
     var roundDuration by remember { mutableFloatStateOf(60f) }
+    
+Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        Text(
+            text = "Настройки игры",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold
+        )
 
+        SettingSlider(
+            title = "Скорость игры",
+            value = gameSpeed,
+            valueRange = 0.5f..3f,
+            steps = 4,
+            displayValue = "%.1fx".format(gameSpeed),
+            onValueChange = { gameSpeed = it }
+        )
+
+        SettingSlider(
+            title = "Максимум жуков на экране",
+            value = maxBugs.toFloat(),
+            valueRange = 1f..20f,
+            steps = 18,
+            displayValue = "${maxBugs} шт.",
+            onValueChange = { maxBugs = it.toInt() }
+        )
+
+        SettingSlider(
+            title = "Интервал появления бонусов",
+            value = bonusInterval,
+            valueRange = 5f..60f,
+            steps = 10,
+            displayValue = "${bonusInterval.toInt()} сек",
+            onValueChange = { bonusInterval = it }
+        )
+
+        SettingSlider(
+            title = "Длительность раунда",
+            value = roundDuration,
+            valueRange = 30f..300f,
+            steps = 8,
+            displayValue = "${roundDuration.toInt()} сек",
+            onValueChange = { roundDuration = it }
+        )
+
+    }
 }
 
 @Composable
