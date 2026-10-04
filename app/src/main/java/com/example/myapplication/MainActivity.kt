@@ -42,7 +42,6 @@ class MainActivity : ComponentActivity() {
 fun MainScreen() {
 
     var selectedTab by remember { mutableIntStateOf(0) }
-    val players = remember { mutableStateListOf<PlayerData>() }
     val tabs = listOf("Регистрация", "Правила игры", "Список авторов", "Настройки игры")
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
@@ -60,7 +59,7 @@ fun MainScreen() {
                 0 -> RegistrationForm()
                 1 -> RulesText()
                 2 -> AuthorsList()
-                //3 -> "СДЕЛАТЬ НАСТРОЙКИ"
+                3 -> Settings()
             }
         }
     }
