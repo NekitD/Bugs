@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.example.myapplication.tabs
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.DatePicker

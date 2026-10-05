@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.example.myapplication.tabs
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -13,6 +13,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.unit.dp
+import com.example.myapplication.R
 
 @Composable
 fun RulesText(modifier: Modifier = Modifier) {
