@@ -17,8 +17,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -42,26 +46,46 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen() {
 
-    var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Регистрация", "Правила игры", "Список авторов", "Настройки игры")
+
+    val pagerState = rememberPagerState(pageCount = { tabs.size })
+    val scope = rememberCoroutineScope()
+
     var settings by remember { mutableStateOf(SettingsData()) }
+
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-            PrimaryTabRow(selectedTabIndex = selectedTab) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            PrimaryTabRow(selectedTabIndex = pagerState.currentPage) {
                 tabs.forEachIndexed { index, title ->
                     Tab(
-                        selected = selectedTab == index,
-                        onClick = { selectedTab = index },
+                        selected = pagerState.currentPage == index,
+                        onClick = {
+                            scope.launch {
+                                pagerState.animateScrollToPage(index)
+                            }
+                        },
                         text = { Text(title) }
                     )
                 }
             }
-            when(selectedTab){
-                0 -> RegistrationForm()
-                1 -> RulesText()
-                2 -> AuthorsList()
-                3 -> Settings(currentSet = settings,
-                    onSettingsChange = { settings = it })
+
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+                when (page) {
+                    0 -> RegistrationForm()
+                    1 -> RulesText()
+                    2 -> AuthorsList()
+                    3 -> Settings(
+                        currentSet = settings,
+                        onSettingsChange = { settings = it }
+                    )
+                }
             }
         }
     }
