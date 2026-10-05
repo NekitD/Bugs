@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -43,7 +44,7 @@ fun MainScreen() {
 
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Регистрация", "Правила игры", "Список авторов", "Настройки игры")
-
+    var settings by remember { mutableStateOf(SettingsData()) }
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             PrimaryTabRow(selectedTabIndex = selectedTab) {
@@ -59,7 +60,8 @@ fun MainScreen() {
                 0 -> RegistrationForm()
                 1 -> RulesText()
                 2 -> AuthorsList()
-                3 -> Settings()
+                3 -> Settings(currentSet = settings,
+                    onSettingsChange = { settings = it })
             }
         }
     }

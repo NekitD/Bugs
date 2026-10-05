@@ -13,8 +13,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -22,15 +21,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
-@Composable
-fun Settings(modifier: Modifier = Modifier) {
 
-    var gameSpeed by remember { mutableFloatStateOf(1f) }
-    var maxBugs by remember { mutableIntStateOf(5) }
-    var bonusInterval by remember { mutableFloatStateOf(15f) }
-    var roundDuration by remember { mutableFloatStateOf(60f) }
-    
-Column(
+data class SettingsData(
+    val gameSpeed: Float = 1f,
+    val maxBugs: Int = 5,
+    val bonusInterval: Float = 15f,
+    val roundDuration: Float = 60f
+)
+
+
+@Composable
+fun Settings(
+    modifier: Modifier = Modifier,
+    currentSet: SettingsData,
+    onSettingsChange: (SettingsData) -> Unit
+) {
+    Column(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
@@ -45,40 +51,39 @@ Column(
 
         SettingSlider(
             title = "Скорость игры",
-            value = gameSpeed,
+            value = currentSet.gameSpeed,
             valueRange = 0.5f..3f,
             steps = 4,
-            displayValue = "%.1fx".format(gameSpeed),
-            onValueChange = { gameSpeed = it }
+            displayValue = "%.1fx".format(currentSet.gameSpeed),
+            onValueChange = { onSettingsChange(currentSet.copy(gameSpeed = it)) }
         )
 
         SettingSlider(
             title = "Максимум жуков на экране",
-            value = maxBugs.toFloat(),
+            value = currentSet.maxBugs.toFloat(),
             valueRange = 1f..20f,
             steps = 18,
-            displayValue = "${maxBugs} шт.",
-            onValueChange = { maxBugs = it.toInt() }
+            displayValue = "${currentSet.maxBugs} шт.",
+            onValueChange = { onSettingsChange(currentSet.copy(maxBugs = it.toInt())) }
         )
 
         SettingSlider(
             title = "Интервал появления бонусов",
-            value = bonusInterval,
+            value = currentSet.bonusInterval,
             valueRange = 5f..60f,
             steps = 10,
-            displayValue = "${bonusInterval.toInt()} сек",
-            onValueChange = { bonusInterval = it }
+            displayValue = "${currentSet.bonusInterval.toInt()} сек",
+            onValueChange = { onSettingsChange(currentSet.copy(bonusInterval = it)) }
         )
 
         SettingSlider(
             title = "Длительность раунда",
-            value = roundDuration,
+            value = currentSet.roundDuration,
             valueRange = 30f..300f,
             steps = 8,
-            displayValue = "${roundDuration.toInt()} сек",
-            onValueChange = { roundDuration = it }
+            displayValue = "${currentSet.roundDuration.toInt()} сек",
+            onValueChange = { onSettingsChange(currentSet.copy(roundDuration = it)) }
         )
-
     }
 }
 
