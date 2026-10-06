@@ -24,9 +24,9 @@ import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.myapplication.game.GameScreen
-import com.example.myapplication.tabs.AuthorsList
+import com.example.myapplication.tabs.Authors
 import com.example.myapplication.tabs.RegistrationForm
-import com.example.myapplication.tabs.RulesText
+import com.example.myapplication.tabs.Rules
 import com.example.myapplication.tabs.Settings
 import com.example.myapplication.tabs.SettingsData
 import com.example.myapplication.ui.theme.MyApplicationTheme
@@ -49,7 +49,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen() {
 
-    val tabs = listOf("Регистрация", "Жуки", "Правила игры", "Список авторов", "Настройки игры")
+    val tabs = listOf("Регистрация", "Жуки", "Правила", "Авторы", "Настройки")
 
     val pagerState = rememberPagerState(pageCount = { tabs.size })
     val scope = rememberCoroutineScope()
@@ -83,8 +83,8 @@ fun MainScreen() {
                 when (page) {
                     0 -> RegistrationForm()
                     1 -> GameScreen(settings = settings, onGameOver = {})
-                    2 -> RulesText()
-                    3 -> AuthorsList()
+                    2 -> Rules()
+                    3 -> Authors()
                     4 -> Settings(
                         currentSet = settings,
                         onSettingsChange = { settings = it }

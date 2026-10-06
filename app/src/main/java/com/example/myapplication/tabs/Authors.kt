@@ -35,7 +35,7 @@ data class Author(
 )
 
 @Composable
-fun AuthorsList(modifier: Modifier = Modifier) {
+fun Authors(modifier: Modifier = Modifier) {
 
     val authors = listOf(
         Author(nameRes = R.string.author_one_name, photoRes = R.drawable.a1),
@@ -88,6 +88,6 @@ private fun AuthorItem(author: Author, modifier: Modifier = Modifier) {
 @Composable
 fun AuthorsListPreview() {
     MyApplicationTheme {
-        AuthorsList()
+        Authors()
     }
 }

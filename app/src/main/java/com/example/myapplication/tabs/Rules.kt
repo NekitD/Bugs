@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import com.example.myapplication.R
 
 @Composable
-fun RulesText(modifier: Modifier = Modifier) {
+fun Rules(modifier: Modifier = Modifier) {
     val html = stringResource(id = R.string.rules_html)
     val annotated = remember(html) {
         AnnotatedString.fromHtml(htmlString = html)
