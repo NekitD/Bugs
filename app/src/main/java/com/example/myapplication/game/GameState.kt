@@ -13,7 +13,7 @@ class GameState(private val settings: SettingsData){
 
     fun start(bounds: Size){
         repeat(settings.maxBugs / 2 + 1){
-            spawnBug(bounds, false)
+            spawnBug(bounds)
         }
     }
 
@@ -31,23 +31,23 @@ class GameState(private val settings: SettingsData){
 
     }
 
-    fun update(speed: Float, bounds: Size){
+    fun update(dsec: Float, bounds: Size){
         if(isGameOver) return
 
-        timeLeft -= speed
+        timeLeft -= dsec
         if(timeLeft <= 0f){
             isGameOver = true
             return
         }
 
-        spawnTimer -= speed
-        val aliveCommon = bugs.count{it.alive && !it.isGolden}
-        if (spawnTimer <= 0f && aliveCommon < settings.maxBugs){
-            spawnBug(bounds, false)
+        spawnTimer -= dsec
+        val alive = bugs.count{it.alive}
+        if (spawnTimer <= 0f && alive < settings.maxBugs){
+            spawnBug(bounds)
             spawnTimer = 1f / settings.gameSpeed
         }
         bugs.forEach { bug ->
-            bug.update(speed, bounds, settings.gameSpeed)
+            bug.update(dsec, bounds, settings.gameSpeed)
         }
         bugs.removeAll { !it.alive }
     }
@@ -65,10 +65,10 @@ class GameState(private val settings: SettingsData){
         com.example.myapplication.R.drawable.bug4
     )
 
-    private fun spawnBug(bounds: Size, golden: Boolean){
+    private fun spawnBug(bounds: Size){
         val angle = Random.nextFloat() * 2f * Math.PI.toFloat()
-        val speed = if (golden) 120f else 180f
-        val bugSize = if (golden) 100f else 150f
+        val speed = 180f
+        val bugSize = 150f
         val x = Random.nextFloat() * (bounds.width - bugSize)
         val y = Random.nextFloat() * (bounds.height - bugSize)
 
@@ -76,7 +76,7 @@ class GameState(private val settings: SettingsData){
 
         bugs += Bug(nextId++,Offset(x,y),
             Offset(cos(angle) * speed, sin(angle) * speed),
-            bugSize, golden, image)
+            bugSize, image)
     }
 
 }

@@ -9,16 +9,15 @@ data class Bug(
     var position: Offset,
     var velocity: Offset,
     val size: Float = 100f,
-    val isGolden: Boolean = false,
     @DrawableRes val imageRes: Int,
     var alive: Boolean = true
 ) {
-    fun update(deltaSec: Float, bounds: Size, speedMultiplier: Float) {
+    fun update(dsec: Float, bounds: Size, speed: Float) {
         if (!alive) return
-        val vx = velocity.x * speedMultiplier
-        val vy = velocity.y * speedMultiplier
-        var newX = position.x + vx * deltaSec
-        var newY = position.y + vy * deltaSec
+        val vx = velocity.x * speed
+        val vy = velocity.y * speed
+        var newX = position.x + vx * dsec
+        var newY = position.y + vy * dsec
 
         if (newX < 0f) { newX = 0f; velocity = velocity.copy(x = -velocity.x) }
         if (newY < 0f) { newY = 0f; velocity = velocity.copy(y = -velocity.y) }
