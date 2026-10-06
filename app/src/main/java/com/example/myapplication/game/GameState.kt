@@ -10,6 +10,28 @@ import kotlin.random.Random
 class GameState(private val settings: SettingsData){
 
     val bugs = mutableListOf<Bug>()
+    var tilt = Offset.Zero
+
+    fun start(bounds: Size){
+        repeat(settings.maxBugs / 2 + 1){
+            SpawnBug(bounds, false)
+        }
+    }
+
+    fun onTap(tap: Offset): Boolean{
+        if(isGameOver) return false
+        val hit = bugs.firstOrNull{it.alive && it.contains(tap)}
+        if(hit != null){
+            hit.alive = false
+            score += 3
+            return true
+        } else {
+            score -= 1
+            return false
+        }
+
+    }
+
     private var score = 0
     private var timeLeft = settings.roundDuration
     private var isGameOver = false
@@ -17,7 +39,6 @@ class GameState(private val settings: SettingsData){
     private var goldenTimer = 20f
     private var bonusActive = false
     private var bonusTimeLeft = 0f
-    var tilt = Offset.Zero
     private var nextId: Long = 0
     private var spawnTimer = 0f
 
