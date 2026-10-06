@@ -40,6 +40,9 @@ import com.example.myapplication.R
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import kotlin.math.roundToInt
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 
 @Composable
 fun GameScreen(
@@ -121,7 +124,7 @@ fun GameScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp),
+                    .padding(5.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
@@ -140,7 +143,14 @@ fun GameScreen(
             if (bonusActive) {
                 Text(
                     text = "Бонус наклона активен!",
-                    modifier = Modifier.padding(horizontal = 8.dp),
+                    modifier = Modifier.padding(horizontal = 5.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold
+                )
+            } else {
+                Text(
+                    text = "",
+                    modifier = Modifier.padding(horizontal = 5.dp),
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -158,6 +168,12 @@ fun GameScreen(
                         }
                     }
             ) {
+                Image(
+                    painter = painterResource(R.drawable.background),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
                 Canvas(
                     modifier = Modifier
                         .fillMaxSize()

@@ -93,7 +93,7 @@ class GameState(private val settings: SettingsData){
     private fun spawnBug(bounds: Size, golden: Boolean){
         val angle = Random.nextFloat() * 2f * Math.PI.toFloat()
         val speed = if (golden) 120f else 180f
-        val bugSize = if (golden) 90f else 100f
+        val bugSize = if (golden) 100f else 150f
         val x = Random.nextFloat() * (bounds.width - bugSize)
         val y = Random.nextFloat() * (bounds.height - bugSize)
 
