@@ -72,17 +72,18 @@ class GameState(private val settings: SettingsData){
         bugs.removeAll { !it.alive }
     }
 
-    private var score = 0
-    private var timeLeft = settings.roundDuration
-    private var isGameOver = false
-    private var bonusTimer = settings.bonusInterval
-    private var goldenTimer = 20f
-    private var bonusActive = false
-    private var bonusTimeLeft = 0f
-    private var nextId: Long = 0
-    private var spawnTimer = 0f
+    var score = 0
+    var timeLeft = settings.roundDuration
+    var isGameOver = false
+    fun getGameOver(): Boolean {return isGameOver}
+    var bonusTimer = settings.bonusInterval
+    var goldenTimer = 20f
+    var bonusActive = false
+    var bonusTimeLeft = 0f
+    var nextId: Long = 0
+    var spawnTimer = 0f
 
-    private var commonBugImages = listOf(
+    var commonBugImages = listOf(
         com.example.myapplication.R.drawable.bug1,
         com.example.myapplication.R.drawable.bug2,
         com.example.myapplication.R.drawable.bug3,
