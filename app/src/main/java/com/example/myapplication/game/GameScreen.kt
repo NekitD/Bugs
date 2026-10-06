@@ -70,12 +70,9 @@ fun GameScreen(
 
     var score by remember { mutableIntStateOf(0) }
     var timeLeft by remember { mutableFloatStateOf(settings.roundDuration) }
-    var bonusActive by remember { mutableStateOf(false) }
     var bugsSnapshot by remember { mutableStateOf<List<Bug>>(emptyList()) }
     var tick by remember { mutableIntStateOf(0) }
-
     var fieldSize by remember { mutableStateOf(Size.Zero) }
-    val tilt = remember { Offset.Zero }
 
 
     LaunchedEffect(gameStarted) {
@@ -89,7 +86,6 @@ fun GameScreen(
 
         score = 0
         timeLeft = settings.roundDuration
-        bonusActive = false
 
         var lastFrame = 0L
 
@@ -100,12 +96,10 @@ fun GameScreen(
                     .coerceAtMost(0.05f)
                 lastFrame = now
 
-                gameState.tilt = tilt
                 gameState.update(deltaSec, fieldSize)
 
                 score = gameState.score
                 timeLeft = gameState.timeLeft
-                bonusActive = gameState.bonusActive
                 bugsSnapshot = gameState.bugs.toList()
                 tick++
             }
@@ -139,23 +133,6 @@ fun GameScreen(
                     color = if (timeLeft < 10f) Color.Red else Color.Unspecified
                 )
             }
-
-            if (bonusActive) {
-                Text(
-                    text = "Бонус наклона активен!",
-                    modifier = Modifier.padding(horizontal = 5.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.SemiBold
-                )
-            } else {
-                Text(
-                    text = "",
-                    modifier = Modifier.padding(horizontal = 5.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-
             Box(
                 modifier = Modifier
                     .fillMaxSize()

@@ -10,7 +10,6 @@ import kotlin.random.Random
 class GameState(private val settings: SettingsData){
 
     val bugs = mutableListOf<Bug>()
-    var tilt = Offset.Zero
 
     fun start(bounds: Size){
         repeat(settings.maxBugs / 2 + 1){
@@ -41,33 +40,14 @@ class GameState(private val settings: SettingsData){
             return
         }
 
-        if(bonusActive){
-            bonusTimeLeft -= speed
-            if(bonusTimeLeft <= 0f){
-                bonusActive = false
-
-            }
-        }
-
         spawnTimer -= speed
         val aliveCommon = bugs.count{it.alive && !it.isGolden}
         if (spawnTimer <= 0f && aliveCommon < settings.maxBugs){
             spawnBug(bounds, false)
             spawnTimer = 1f / settings.gameSpeed
         }
-
-        bonusTimer -= speed
-        if(bonusTimer <= 0f){
-            bonusActive = true
-            bonusTimeLeft = 10f
-            bonusTimer = settings.bonusInterval
-        }
-
-        goldenTimer -= speed
-        val hasGolden = bugs.any{it.alive && it.isGolden}
-        if(goldenTimer <= 0f && !hasGolden){
-            spawnBug(bounds, true)
-            goldenTimer = 20f
+        bugs.forEach { bug ->
+            bug.update(speed, bounds, settings.gameSpeed)
         }
         bugs.removeAll { !it.alive }
     }
@@ -75,11 +55,6 @@ class GameState(private val settings: SettingsData){
     var score = 0
     var timeLeft = settings.roundDuration
     var isGameOver = false
-    fun getGameOver(): Boolean {return isGameOver}
-    var bonusTimer = settings.bonusInterval
-    var goldenTimer = 20f
-    var bonusActive = false
-    var bonusTimeLeft = 0f
     var nextId: Long = 0
     var spawnTimer = 0f
 
