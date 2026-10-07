@@ -25,10 +25,11 @@ class GameState(private val settings: SettingsData){
             score += 3
             return true
         } else {
-            score -= 1
+            if(score > 0){
+                score -= 1
+            }
             return false
         }
-
     }
 
     fun update(dsec: Float, bounds: Size){
