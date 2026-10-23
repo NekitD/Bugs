@@ -14,7 +14,12 @@ interface GameSessionDao {
     @Query("""
         SELECT p.name AS playerName, s.score, s.difficulty, s.finishedAt
         FROM game_sessions s
-        JOIN players p ON p.id = s.playerId
+        INNER JOIN players p ON p.id = s.playerId
+        INNER JOIN (
+            SELECT playerId, MAX(score) AS maxScore
+            FROM game_sessions
+            GROUP BY playerId
+        ) best ON s.playerId = best.playerId AND s.score = best.maxScore
         ORDER BY s.score DESC, s.finishedAt ASC, s.id DESC
     """)
     fun observeRecords(): Flow<List<RecordRow>>
@@ -22,7 +27,12 @@ interface GameSessionDao {
     @Query("""
         SELECT p.name AS playerName, s.score, s.difficulty, s.finishedAt
         FROM game_sessions s
-        JOIN players p ON p.id = s.playerId
+        INNER JOIN players p ON p.id = s.playerId
+        INNER JOIN (
+            SELECT playerId, MAX(score) AS maxScore
+            FROM game_sessions
+            GROUP BY playerId
+        ) best ON s.playerId = best.playerId AND s.score = best.maxScore
         ORDER BY s.score DESC, s.finishedAt ASC, s.id DESC
     """)
     suspend fun getRecordsOnce(): List<RecordRow>
