@@ -49,7 +49,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen() {
 
-    val tabs = listOf("Регистрация", "Жуки", "Правила", "Авторы", "Настройки")
+    val tabs = listOf("Регистрация", "Вход", "Жуки", "Рекорды" , "Правила", "Авторы", "Настройки")
 
     val pagerState = rememberPagerState(pageCount = { tabs.size })
     val scope = rememberCoroutineScope()
@@ -83,9 +83,9 @@ fun MainScreen() {
                 when (page) {
                     0 -> RegistrationForm()
                     1 -> GameScreen(settings = settings, onGameOver = {})
-                    2 -> Rules()
-                    3 -> Authors()
-                    4 -> Settings(
+                    4 -> Rules()
+                    5 -> Authors()
+                    6 -> Settings(
                         currentSet = settings,
                         onSettingsChange = { settings = it }
                     )
