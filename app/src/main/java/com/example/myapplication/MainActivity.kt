@@ -31,6 +31,8 @@ import com.example.myapplication.tabs.Settings
 import com.example.myapplication.tabs.SettingsData
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import androidx.compose.runtime.mutableIntStateOf
+import com.example.myapplication.tabs.PlayerSelect
+import com.example.myapplication.data.PlayerEntity
 
 class MainActivity : ComponentActivity() {
 
@@ -56,6 +58,7 @@ fun MainScreen() {
     val scope = rememberCoroutineScope()
     var currentPlayerId by remember { mutableStateOf<Long?>(null) }
     var settings by remember { mutableStateOf(SettingsData()) }
+    var players by remember { mutableStateOf<List<PlayerEntity>>(emptyList()) }
     var refreshKey by remember { mutableIntStateOf(0) }
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
@@ -90,7 +93,18 @@ fun MainScreen() {
                             scope.launch { pagerState.animateScrollToPage(1) }
                         }
                     )
-                    1 -> GameScreen(settings = settings, onGameOver = {})
+                    1 -> PlayerSelect(
+                        players = players,
+                        currentPlayerId = currentPlayerId,
+                        onSelect = { id ->
+                            currentPlayerId = id
+                            scope.launch { pagerState.animateScrollToPage(2) }
+                        },
+                        onGoToRegistration = {
+                            scope.launch { pagerState.animateScrollToPage(0) }
+                        }
+                    )
+                    2 -> GameScreen(settings = settings, onGameOver = {})
                     4 -> Rules()
                     5 -> Authors()
                     6 -> Settings(

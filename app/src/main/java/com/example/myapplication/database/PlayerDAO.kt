@@ -9,12 +9,14 @@ import com.example.myapplication.data.PlayerEntity
 
 @Dao
 interface PlayerDao {
-
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(player: PlayerEntity): Long
 
     @Query("SELECT * FROM players ORDER BY name")
     fun observeAll(): Flow<List<PlayerEntity>>
+
+    @Query("SELECT * FROM players ORDER BY name")
+    suspend fun getAllOnce(): List<PlayerEntity>
 
     @Query("SELECT * FROM players WHERE id = :id")
     suspend fun getById(id: Long): PlayerEntity?

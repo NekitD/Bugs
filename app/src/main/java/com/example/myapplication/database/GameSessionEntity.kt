@@ -26,5 +26,5 @@ data class GameSessionEntity(
     val playerId: Long,
     val score: Int,
     val difficulty: Int,
-    val finishedAt: Long   // миллисекунды UTC
+    val finishedAt: Long
 )
