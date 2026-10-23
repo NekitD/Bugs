@@ -30,6 +30,7 @@ import com.example.myapplication.tabs.Rules
 import com.example.myapplication.tabs.Settings
 import com.example.myapplication.tabs.SettingsData
 import com.example.myapplication.ui.theme.MyApplicationTheme
+import androidx.compose.runtime.mutableIntStateOf
 
 class MainActivity : ComponentActivity() {
 
@@ -53,8 +54,9 @@ fun MainScreen() {
 
     val pagerState = rememberPagerState(pageCount = { tabs.size })
     val scope = rememberCoroutineScope()
-
+    var currentPlayerId by remember { mutableStateOf<Long?>(null) }
     var settings by remember { mutableStateOf(SettingsData()) }
+    var refreshKey by remember { mutableIntStateOf(0) }
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
@@ -81,7 +83,13 @@ fun MainScreen() {
                 modifier = Modifier.fillMaxSize()
             ) { page ->
                 when (page) {
-                    0 -> RegistrationForm()
+                    0 -> RegistrationForm(
+                        onRegistered = { id ->
+                            currentPlayerId = id
+                            refreshKey++
+                            scope.launch { pagerState.animateScrollToPage(1) }
+                        }
+                    )
                     1 -> GameScreen(settings = settings, onGameOver = {})
                     4 -> Rules()
                     5 -> Authors()

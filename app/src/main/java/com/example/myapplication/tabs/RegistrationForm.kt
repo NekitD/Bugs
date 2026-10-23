@@ -1,7 +1,6 @@
 package com.example.myapplication.tabs
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
@@ -9,15 +8,30 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.ui.theme.MyApplicationTheme
+import androidx.room.Room
+import com.example.myapplication.database.AppDatabase
+import com.example.myapplication.data.PlayerEntity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import android.database.sqlite.SQLiteConstraintException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegistrationForm(modifier: Modifier = Modifier) {
+fun RegistrationForm(
+    modifier: Modifier = Modifier,
+    onRegistered: (Long) -> Unit = {}
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    // Получаем экземпляр базы данных
+    val db = remember { AppDatabase.getInstance(context) }
+
     var fullName by remember { mutableStateOf("") }
     var gender by remember { mutableStateOf("Мужской") }
     var course by remember { mutableStateOf("1 курс") }
@@ -28,11 +42,12 @@ fun RegistrationForm(modifier: Modifier = Modifier) {
     var selectedMonth by remember { mutableIntStateOf(0) }
     var selectedYear by remember { mutableIntStateOf(2000) }
 
-    var playerData by remember { mutableStateOf<PlayerData?>(null) }
+    var validationError by remember { mutableStateOf<String?>(null) }
+    var isSaving by remember { mutableStateOf(false) }
 
     val courses = listOf("1 курс", "2 курс", "3 курс", "4 курс", "Магистратура", "Аспирантура")
     val genders = listOf("Мужской", "Женский")
-    
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -49,11 +64,23 @@ fun RegistrationForm(modifier: Modifier = Modifier) {
 
         OutlinedTextField(
             value = fullName,
-            onValueChange = { fullName = it },
+            onValueChange = {
+                fullName = it
+                validationError = null
+            },
             label = { Text("ФИО") },
+            isError = validationError != null,
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
+
+        if (validationError != null) {
+            Text(
+                text = validationError!!,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
 
         Text(text = "Пол:", fontWeight = FontWeight.SemiBold)
         Row(
@@ -134,57 +161,50 @@ fun RegistrationForm(modifier: Modifier = Modifier) {
 
         Button(
             onClick = {
-                val (zodiacName, zodiacRes) = getZodiacSign(selectedDay, selectedMonth + 1)
-                if(fullName.isNotEmpty()) {
-                    playerData = PlayerData(
-                        fullName = fullName,
-                        gender = gender,
-                        course = course,
-                        difficulty = difficulty.toInt(),
-                        birthDate = "%02d.%02d.%04d".format(
-                            selectedDay,
-                            selectedMonth + 1,
-                            selectedYear
-                        ),
-                        zodiacSign = zodiacName,
-                        zodiacSym = zodiacRes
-                    )
+                val trimmedName = fullName.trim()
+                if (trimmedName.isEmpty()) {
+                    validationError = "Введите ФИО"
+                    return@Button
                 }
-            },
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
-        ){
-            Text("Зарегистрировать")
-        }
 
-        playerData?.let{
-            data -> Card(
-                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-            ){
-                Column(modifier = Modifier.padding(16.dp).align(Alignment.CenterHorizontally),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
-                ){
-                    Text("Данные игрока:", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                    Text(text = "ФИО: ${data.fullName}")
-                    Text(text = "Пол: ${data.gender}")
-                    Text(text = "Курс: ${data.course}")
-                    Text(text = "Уровень сложности: ${data.difficulty}")
-                    Text(text = "Дата рождения: ${data.birthDate}")
-                    Text(text = "Знак зодиака: ${data.zodiacSign}", fontWeight = FontWeight.SemiBold)
-                    if(data.zodiacSym.isNotEmpty()){
-                        Text(text = data.zodiacSym, fontSize = 72.sp, modifier = Modifier.align(Alignment.CenterHorizontally))
+                val (zodiacName, _) = getZodiacSign(selectedDay, selectedMonth + 1)
+                val newPlayer = PlayerEntity(
+                    name = trimmedName,
+                    gender = gender,
+                    course = course,
+                    difficulty = difficulty.toInt(),
+                    birthDate = "%02d.%02d.%04d".format(
+                        selectedDay, selectedMonth + 1, selectedYear
+                    ),
+                    zodiacSign = zodiacName
+                )
+
+                isSaving = true
+                scope.launch {
+                    try {
+                        val id = withContext(Dispatchers.IO) {
+                            db.playerDao().insert(newPlayer)
+                        }
+                        fullName = ""
+                        isSaving = false
+                        onRegistered(id)
+                    } catch (e: SQLiteConstraintException) {
+                        isSaving = false
+                        validationError = "Игрок с таким именем уже существует"
+                    } catch (e: Exception) {
+                        isSaving = false
+                        validationError = "Ошибка: ${e.message}"
                     }
                 }
-
+            },
+            enabled = !isSaving,
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+        ) {
+            if (isSaving) {
+                CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+            } else {
+                Text("Зарегистрировать")
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun RegistrationFormPreview() {
-    MyApplicationTheme {
-        RegistrationForm()
     }
 }
