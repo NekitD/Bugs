@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -33,6 +34,11 @@ import com.example.myapplication.ui.theme.MyApplicationTheme
 import androidx.compose.runtime.mutableIntStateOf
 import com.example.myapplication.tabs.PlayerSelect
 import com.example.myapplication.data.PlayerEntity
+import com.example.myapplication.database.AppDatabase
+import kotlinx.coroutines.withContext
+import androidx.compose.ui.platform.LocalContext
+import com.example.myapplication.database.GameSessionEntity
+import kotlinx.coroutines.Dispatchers
 
 class MainActivity : ComponentActivity() {
 
@@ -51,15 +57,30 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
+    val tabs = listOf(
+        "Регистрация", "Вход", "Жуки", "Рекорды",
+        "Правила", "Авторы", "Настройки"
+    )
 
-    val tabs = listOf("Регистрация", "Вход", "Жуки", "Рекорды" , "Правила", "Авторы", "Настройки")
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val db = remember { AppDatabase.getInstance(context) }
 
     val pagerState = rememberPagerState(pageCount = { tabs.size })
-    val scope = rememberCoroutineScope()
-    var currentPlayerId by remember { mutableStateOf<Long?>(null) }
+
     var settings by remember { mutableStateOf(SettingsData()) }
+    var currentPlayerId by remember { mutableStateOf<Long?>(null) }
+
     var players by remember { mutableStateOf<List<PlayerEntity>>(emptyList()) }
     var refreshKey by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(refreshKey) {
+        players = withContext(Dispatchers.IO) {
+            db.playerDao().getAllOnce()
+        }
+    }
+
+    val currentPlayer = players.firstOrNull { it.id == currentPlayerId }
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
@@ -72,9 +93,7 @@ fun MainScreen() {
                     Tab(
                         selected = pagerState.currentPage == index,
                         onClick = {
-                            scope.launch {
-                                pagerState.animateScrollToPage(index)
-                            }
+                            scope.launch { pagerState.animateScrollToPage(index) }
                         },
                         text = { Text(title) }
                     )
@@ -89,7 +108,7 @@ fun MainScreen() {
                     0 -> RegistrationForm(
                         onRegistered = { id ->
                             currentPlayerId = id
-                            refreshKey++
+                            refreshKey++ // обновляем список
                             scope.launch { pagerState.animateScrollToPage(1) }
                         }
                     )
@@ -104,7 +123,25 @@ fun MainScreen() {
                             scope.launch { pagerState.animateScrollToPage(0) }
                         }
                     )
-                    2 -> GameScreen(settings = settings, onGameOver = {})
+                    2 -> GameScreen(
+                        settings = settings,
+                        onGameOver = { score ->
+                            currentPlayerId?.let { playerId ->
+                                scope.launch {
+                                    withContext(Dispatchers.IO) {
+                                        db.gameSessionDao().insert(
+                                            GameSessionEntity(
+                                                playerId = playerId,
+                                                score = score,
+                                                difficulty = currentPlayer?.difficulty ?: 1,
+                                                finishedAt = System.currentTimeMillis()
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    )
                     4 -> Rules()
                     5 -> Authors()
                     6 -> Settings(
