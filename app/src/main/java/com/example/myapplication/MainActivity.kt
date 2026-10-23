@@ -39,6 +39,8 @@ import kotlinx.coroutines.withContext
 import androidx.compose.ui.platform.LocalContext
 import com.example.myapplication.database.GameSessionEntity
 import kotlinx.coroutines.Dispatchers
+import com.example.myapplication.database.RecordRow
+import com.example.myapplication.tabs.Records
 
 class MainActivity : ComponentActivity() {
 
@@ -72,11 +74,13 @@ fun MainScreen() {
     var currentPlayerId by remember { mutableStateOf<Long?>(null) }
 
     var players by remember { mutableStateOf<List<PlayerEntity>>(emptyList()) }
+    var records by remember { mutableStateOf<List<RecordRow>>(emptyList()) }
     var refreshKey by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(refreshKey) {
-        players = withContext(Dispatchers.IO) {
-            db.playerDao().getAllOnce()
+        withContext(Dispatchers.IO) {
+            players = db.playerDao().getAllOnce()
+            records = db.gameSessionDao().getRecordsOnce()
         }
     }
 
@@ -84,9 +88,7 @@ fun MainScreen() {
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
+            modifier = Modifier.fillMaxSize().padding(innerPadding)
         ) {
             PrimaryTabRow(selectedTabIndex = pagerState.currentPage) {
                 tabs.forEachIndexed { index, title ->
@@ -108,7 +110,7 @@ fun MainScreen() {
                     0 -> RegistrationForm(
                         onRegistered = { id ->
                             currentPlayerId = id
-                            refreshKey++ // обновляем список
+                            refreshKey++
                             scope.launch { pagerState.animateScrollToPage(1) }
                         }
                     )
@@ -138,10 +140,13 @@ fun MainScreen() {
                                             )
                                         )
                                     }
+                                    // После сохранения — обновляем список рекордов!
+                                    refreshKey++
                                 }
                             }
                         }
                     )
+                    3 -> Records(records = records)
                     4 -> Rules()
                     5 -> Authors()
                     6 -> Settings(

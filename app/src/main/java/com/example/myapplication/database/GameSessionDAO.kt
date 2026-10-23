@@ -18,6 +18,14 @@ interface GameSessionDao {
         ORDER BY s.score DESC, s.finishedAt ASC, s.id DESC
     """)
     fun observeRecords(): Flow<List<RecordRow>>
+
+    @Query("""
+        SELECT p.name AS playerName, s.score, s.difficulty, s.finishedAt
+        FROM game_sessions s
+        JOIN players p ON p.id = s.playerId
+        ORDER BY s.score DESC, s.finishedAt ASC, s.id DESC
+    """)
+    suspend fun getRecordsOnce(): List<RecordRow>
 }
 
 data class RecordRow(
