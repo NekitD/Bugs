@@ -8,6 +8,7 @@ data class Bug(
     val id: Long,
     var position: Offset,
     var velocity: Offset,
+    val baseVelocity: Offset,
     val size: Float = 100f,
     @DrawableRes val imageRes: Int,
     var alive: Boolean = true
@@ -19,15 +20,24 @@ data class Bug(
         var newX = position.x + vx * dsec
         var newY = position.y + vy * dsec
 
-        if (newX < 0f) { newX = 0f; velocity = velocity.copy(x = -velocity.x) }
-        if (newY < 0f) { newY = 0f; velocity = velocity.copy(y = -velocity.y) }
+        // Коэффициент гашения при ударе о стену
+        val bounceDamping = 0.6f
+
+        if (newX < 0f) {
+            newX = 0f
+            velocity = velocity.copy(x = -velocity.x * bounceDamping)
+        }
+        if (newY < 0f) {
+            newY = 0f
+            velocity = velocity.copy(y = -velocity.y * bounceDamping)
+        }
         if (newX + size > bounds.width) {
             newX = bounds.width - size
-            velocity = velocity.copy(x = -velocity.x)
+            velocity = velocity.copy(x = -velocity.x * bounceDamping)
         }
         if (newY + size > bounds.height) {
             newY = bounds.height - size
-            velocity = velocity.copy(y = -velocity.y)
+            velocity = velocity.copy(y = -velocity.y * bounceDamping)
         }
 
         position = Offset(newX, newY)

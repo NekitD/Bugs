@@ -49,6 +49,7 @@ class GameState(private val settings: SettingsData) {
             return false
         }
     }
+    private var wasBonusActive = false
 
     fun update(dsec: Float, bounds: Size) {
         if (isGameOver) return
@@ -65,7 +66,6 @@ class GameState(private val settings: SettingsData) {
                 isBonusActive = false
             }
         } else {
-
             if (bonusPosition == null) {
                 bonusTimer -= dsec
                 if (bonusTimer <= 0f) {
@@ -78,6 +78,13 @@ class GameState(private val settings: SettingsData) {
             }
         }
 
+        if (wasBonusActive && !isBonusActive) {
+            bugs.forEach { bug ->
+                bug.velocity = bug.baseVelocity
+            }
+        }
+        wasBonusActive = isBonusActive
+
         spawnTimer -= dsec
         val alive = bugs.count { it.alive }
         if (spawnTimer <= 0f && alive < settings.maxBugs) {
@@ -87,14 +94,26 @@ class GameState(private val settings: SettingsData) {
 
         bugs.forEach { bug ->
             if (isBonusActive) {
-                // Режим наклона: жуки скатываются в сторону наклона
-                val tiltForce = currentTilt * 400f * dsec // сила наклона
+                val tiltAccel = currentTilt * 3000f * dsec
                 bug.velocity = Offset(
-                    (bug.velocity.x + tiltForce.x).coerceIn(-500f, 500f),
-                    (bug.velocity.y + tiltForce.y).coerceIn(-500f, 500f)
+                    bug.velocity.x + tiltAccel.x,
+                    bug.velocity.y + tiltAccel.y
                 )
+                val friction = 0.98f
+                bug.velocity = Offset(
+                    bug.velocity.x * friction,
+                    bug.velocity.y * friction
+                )
+                val maxSpeed = 1500f
+                val speed = kotlin.math.sqrt(
+                    bug.velocity.x * bug.velocity.x + bug.velocity.y * bug.velocity.y
+                )
+                if (speed > maxSpeed) {
+                    val k = maxSpeed / speed
+                    bug.velocity = Offset(bug.velocity.x * k, bug.velocity.y * k)
+                }
             }
-            bug.update(dsec, bounds, settings.gameSpeed)
+            bug.update(dsec, bounds, if (isBonusActive) 1f else settings.gameSpeed)
         }
         bugs.removeAll { !it.alive }
     }
@@ -125,9 +144,15 @@ class GameState(private val settings: SettingsData) {
 
         val x = Random.nextFloat() * (bounds.width - bugSize)
         val y = Random.nextFloat() * (bounds.height - bugSize)
+        val initialVelocity = Offset(cos(angle) * speed, sin(angle) * speed)
 
-        bugs += Bug(nextId++, Offset(x, y),
-            Offset(cos(angle) * speed, sin(angle) * speed),
-            bugSize, image)
+        bugs += Bug(
+            nextId++,
+            Offset(x, y),
+            initialVelocity,
+            initialVelocity,
+            bugSize,
+            image
+        )
     }
 }

@@ -46,6 +46,7 @@ import androidx.compose.ui.res.painterResource
 import android.media.MediaPlayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.material3.Surface
 
 @Composable
 fun GameScreen(
@@ -58,7 +59,7 @@ fun GameScreen(
     var gameStarted by remember { mutableStateOf(false) }
     var finalScore by remember { mutableStateOf<Int?>(null) }
 
-    val tilt = rememberTilt()
+    val tiltState = rememberTiltState()
     var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
     DisposableEffect(Unit) {
         onDispose {
@@ -110,7 +111,7 @@ fun GameScreen(
                     .coerceAtMost(0.05f)
                 lastFrame = now
 
-                gameState.currentTilt = tilt
+                gameState.currentTilt = tiltState.value
 
                 if (gameState.isBonusActive && !wasBonusActive) {
                     // Играем звук
@@ -158,14 +159,7 @@ fun GameScreen(
                     color = if (timeLeft < 10f) Color.Red else Color.Unspecified
                 )
             }
-            if (gameState.isBonusActive) {
-                Text(
-                    text = "Бонус наклона активен!",
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                )
-            }
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -203,7 +197,22 @@ fun GameScreen(
                         )
                     }
                 }
-
+                if (gameState.isBonusActive) {
+                    Surface(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(top = 16.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        shape = MaterialTheme.shapes.small
+                    ) {
+                        Text(
+                            text = "Бонус наклона активен!",
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        )
+                    }
+                }
                 if (!gameStarted || finalScore != null) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
