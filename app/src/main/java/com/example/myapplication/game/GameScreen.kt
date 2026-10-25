@@ -43,6 +43,9 @@ import kotlin.math.roundToInt
 import androidx.compose.foundation.Image
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import android.media.MediaPlayer
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.DisposableEffect
 
 @Composable
 fun GameScreen(
@@ -50,9 +53,19 @@ fun GameScreen(
     modifier: Modifier = Modifier,
     onGameOver: (Int) -> Unit = {}
 ) {
+    val context = LocalContext.current
     val gameState = remember(settings) { GameState(settings) }
     var gameStarted by remember { mutableStateOf(false) }
     var finalScore by remember { mutableStateOf<Int?>(null) }
+
+    val tilt = rememberTilt()
+    var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+    DisposableEffect(Unit) {
+        onDispose {
+            mediaPlayer?.release()
+            mediaPlayer = null
+        }
+    }
 
 
     val bug1Bitmap = ImageBitmap.imageResource(R.drawable.bug1)
@@ -88,6 +101,7 @@ fun GameScreen(
         timeLeft = settings.roundDuration
 
         var lastFrame = 0L
+        var wasBonusActive = false
 
         while (!gameState.isGameOver) {
             withFrameNanos { now ->
@@ -95,6 +109,17 @@ fun GameScreen(
                 val deltaSec = ((now - lastFrame) / 1_000_000_000f)
                     .coerceAtMost(0.05f)
                 lastFrame = now
+
+                gameState.currentTilt = tilt
+
+                if (gameState.isBonusActive && !wasBonusActive) {
+                    // Играем звук
+                    mediaPlayer?.release()
+                    mediaPlayer = MediaPlayer.create(context, R.raw.bug_scream)
+                    mediaPlayer?.start()
+                }
+                wasBonusActive = gameState.isBonusActive
+
 
                 gameState.update(deltaSec, fieldSize)
 
@@ -133,6 +158,14 @@ fun GameScreen(
                     color = if (timeLeft < 10f) Color.Red else Color.Unspecified
                 )
             }
+            if (gameState.isBonusActive) {
+                Text(
+                    text = "Бонус наклона активен!",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
+            }
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -161,6 +194,13 @@ fun GameScreen(
                     bugsSnapshot.forEach { bug ->
                         val bmp = bugBitmaps[bug.imageRes] ?: bugBitmaps.values.first()
                         drawBug(bug, bmp)
+                    }
+                    gameState.bonusPosition?.let { pos ->
+                        drawCircle(
+                            color = Color.Yellow,
+                            radius = 40f,
+                            center = Offset(pos.x + 50f, pos.y + 50f)
+                        )
                     }
                 }
 
