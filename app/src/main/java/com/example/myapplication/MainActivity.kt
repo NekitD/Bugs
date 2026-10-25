@@ -41,6 +41,7 @@ import com.example.myapplication.database.GameSessionEntity
 import kotlinx.coroutines.Dispatchers
 import com.example.myapplication.database.RecordRow
 import com.example.myapplication.tabs.Records
+import androidx.compose.foundation.background
 
 class MainActivity : ComponentActivity() {
 
@@ -127,20 +128,20 @@ fun MainScreen() {
                     )
                     2 -> GameScreen(
                         settings = settings,
+                        playerName = currentPlayer?.name,
                         onGameOver = { score ->
-                            currentPlayerId?.let { playerId ->
+                            if (currentPlayerId != null) {
                                 scope.launch {
                                     withContext(Dispatchers.IO) {
                                         db.gameSessionDao().insert(
                                             GameSessionEntity(
-                                                playerId = playerId,
+                                                playerId = currentPlayerId!!,
                                                 score = score,
                                                 difficulty = currentPlayer?.difficulty ?: 1,
                                                 finishedAt = System.currentTimeMillis()
                                             )
                                         )
                                     }
-                                    // После сохранения — обновляем список рекордов!
                                     refreshKey++
                                 }
                             }

@@ -47,10 +47,12 @@ import android.media.MediaPlayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.material3.Surface
+import androidx.compose.ui.text.style.TextAlign
 
 @Composable
 fun GameScreen(
     settings: SettingsData,
+    playerName: String?,
     modifier: Modifier = Modifier,
     onGameOver: (Int) -> Unit = {}
 ) {
@@ -248,8 +250,32 @@ fun GameScreen(
                                     text = "Нажимайте на жуков: +3 очка\nПромах: −1 очко",
                                     fontSize = 16.sp
                                 )
-                                Button(onClick = { gameStarted = true }) {
-                                    Text("Начать игру")
+                                if (playerName != null) {
+                                    // Игрок выбран — можно играть
+                                    Text(
+                                        text = "Игрок: $playerName",
+                                        fontSize = 16.sp,
+                                        color = Color.Yellow,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Button(onClick = { gameStarted = true }) {
+                                        Text("Начать игру")
+                                    }
+                                } else {
+                                    // Игрок не выбран — показываем предупреждение
+                                    Text(
+                                        text = "Сначала выберите игрока\nво вкладке «Вход»",
+                                        fontSize = 16.sp,
+                                        color = Color.Red,
+                                        textAlign = TextAlign.Center,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Button(
+                                        onClick = { },
+                                        enabled = false
+                                    ) {
+                                        Text("Начать игру")
+                                    }
                                 }
                             }
                         }
