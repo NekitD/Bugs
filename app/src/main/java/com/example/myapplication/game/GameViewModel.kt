@@ -14,24 +14,23 @@ class GameViewModel : ViewModel() {
     val uiState: StateFlow<GameUiState> = _uiState.asStateFlow()
 
     private var gameState: GameState? = null
-    private var currentSettings: SettingsData? = null
-    private var currentPlayerName: String? = null
+    private var goldRate: Double? = null
 
     fun startGame(settings: SettingsData, playerName: String?, fieldSize: Size) {
-        currentSettings = settings
-        currentPlayerName = playerName
         gameState = GameState(settings).apply {
+            this.goldRate = this@GameViewModel.goldRate
             start(fieldSize)
         }
         _uiState.value = GameUiState(
             score = 0,
             timeLeft = settings.roundDuration,
             isGameOver = false,
-            gameStarted = true
+            gameStarted = true,
+            goldRate = goldRate,
+            goldBugPoints = gameState!!.goldBugPoints
         )
     }
 
-    // Вызывается на каждом кадре
     fun update(deltaSec: Float, fieldSize: Size, tilt: Offset) {
         val gs = gameState ?: return
         if (gs.isGameOver) return
@@ -46,8 +45,16 @@ class GameViewModel : ViewModel() {
             bugs = gs.bugs.toList(),
             bonusPosition = gs.bonusPosition,
             isBonusActive = gs.isBonusActive,
-            goldRate = gs.goldRate,
             goldBugPoints = gs.goldBugPoints
+        )
+    }
+
+    fun setGoldRate(rate: Double?) {
+        goldRate = rate
+        gameState?.goldRate = rate   // если игра уже идёт — обновим и там
+        _uiState.value = _uiState.value.copy(
+            goldRate = rate,
+            goldBugPoints = gameState?.goldBugPoints ?: _uiState.value.goldBugPoints
         )
     }
 
@@ -55,14 +62,9 @@ class GameViewModel : ViewModel() {
         gameState?.onTap(offset)
     }
 
-    fun setGoldRate(rate: Double?) {
-        gameState?.goldRate = rate
-        _uiState.value = _uiState.value.copy(goldRate = rate)
-    }
-
     fun resetGame() {
         gameState = null
-        _uiState.value = GameUiState()
+        _uiState.value = GameUiState(goldRate = goldRate)
     }
 }
 
