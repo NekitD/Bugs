@@ -42,12 +42,28 @@ import kotlinx.coroutines.Dispatchers
 import com.example.myapplication.database.RecordRow
 import com.example.myapplication.tabs.Records
 import androidx.compose.foundation.background
+import android.appwidget.AppWidgetManager
+import android.appwidget.AppWidgetProviderInfo
+import android.content.ComponentName
+import android.os.Build
+import android.widget.RemoteViews
+import com.example.myapplication.gold.GoldWidgetProvider
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        if (Build.VERSION.SDK_INT >= 35) {
+            val appWidgetManager = AppWidgetManager.getInstance(this)
+            val componentName = ComponentName(this, GoldWidgetProvider::class.java)
+            val preview = RemoteViews(packageName, R.layout.widget_gold)
+            appWidgetManager.setWidgetPreview(
+                componentName,
+                AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN,
+                preview
+            )
+        }
         setContent {
             MyApplicationTheme {
                 MainScreen()

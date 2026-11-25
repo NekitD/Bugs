@@ -12,9 +12,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication"
         android:networkSecurityConfig="@xml/netsecconf">
-        <receiver android:name=".widget.GoldWidgetProvider" android:exported="false">
+        <receiver android:name=".gold.GoldWidgetProvider" android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.appwidget.action.APPWIDGET_ENABLED" />
+                <action android:name="android.appwidget.action.APPWIDGET_DELETED" />
+                <action android:name="android.appwidget.action.APPWIDGET_DISABLED" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
