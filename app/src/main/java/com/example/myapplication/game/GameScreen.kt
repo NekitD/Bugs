@@ -1,6 +1,8 @@
 package com.example.myapplication.game
 
+import android.media.MediaPlayer
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,12 +13,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -26,50 +28,47 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
-import com.example.myapplication.tabs.SettingsData
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.res.imageResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.myapplication.R
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
-import kotlin.math.roundToInt
-import androidx.compose.foundation.Image
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import android.media.MediaPlayer
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.material3.Surface
-import androidx.compose.ui.text.style.TextAlign
 import com.example.myapplication.gold.GoldRepository
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.ColorFilter
+import com.example.myapplication.tabs.SettingsData
+import kotlinx.coroutines.flow.collectLatest
+import org.koin.androidx.compose.koinViewModel
+import kotlin.math.roundToInt
 
 @Composable
 fun GameScreen(
     settings: SettingsData,
     playerName: String?,
     modifier: Modifier = Modifier,
-    onGameOver: (Int) -> Unit = {}
+    onGameOver: (Int) -> Unit = {},
+    viewModel: GameViewModel = koinViewModel()
 ) {
     val context = LocalContext.current
-    val gameState = remember(settings) { GameState(settings) }
-    var gameStarted by remember { mutableStateOf(false) }
-    var finalScore by remember { mutableStateOf<Int?>(null) }
-
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val tiltState = rememberTiltState()
-    var goldRate by remember { mutableStateOf<Double?>(null) }
+
+    var fieldSize by remember { mutableStateOf(Size.Zero) }
+
     LaunchedEffect(Unit) {
-        goldRate = GoldRepository.fetchGoldRate(context)
+        viewModel.setGoldRate(GoldRepository.fetchGoldRate(context))
     }
-    gameState.goldRate = goldRate
+
     var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
     DisposableEffect(Unit) {
         onDispose {
@@ -77,74 +76,48 @@ fun GameScreen(
             mediaPlayer = null
         }
     }
-
-
-    val bug1Bitmap = ImageBitmap.imageResource(R.drawable.bug1)
-    val bug2Bitmap = ImageBitmap.imageResource(R.drawable.bug2)
-    val bug3Bitmap = ImageBitmap.imageResource(R.drawable.bug3)
-    val bug4Bitmap = ImageBitmap.imageResource(R.drawable.bug4)
-    val goldenBitmap = ImageBitmap.imageResource(R.drawable.golden)
-    val bugBitmaps: Map<Int, ImageBitmap> = remember {
-        mapOf(
-            R.drawable.bug1 to bug1Bitmap,
-            R.drawable.bug2 to bug2Bitmap,
-            R.drawable.bug3 to bug3Bitmap,
-            R.drawable.bug4 to bug4Bitmap,
-            R.drawable.golden to goldenBitmap
-        )
+    LaunchedEffect(uiState.isBonusActive) {
+        if (uiState.isBonusActive) {
+            mediaPlayer?.release()
+            mediaPlayer = MediaPlayer.create(context, R.raw.bug_scream)
+            mediaPlayer?.start()
+        }
     }
 
-    var score by remember { mutableIntStateOf(0) }
-    var timeLeft by remember { mutableFloatStateOf(settings.roundDuration) }
-    var bugsSnapshot by remember { mutableStateOf<List<Bug>>(emptyList()) }
-    var tick by remember { mutableIntStateOf(0) }
-    var fieldSize by remember { mutableStateOf(Size.Zero) }
-
-
-    LaunchedEffect(gameStarted) {
-        if (!gameStarted) return@LaunchedEffect
-
-        while (fieldSize == Size.Zero) {
-            withFrameNanos { }
-        }
-
-        gameState.start(fieldSize)
-
-        score = 0
-        timeLeft = settings.roundDuration
+    LaunchedEffect(uiState.gameStarted, fieldSize) {
+        if (!uiState.gameStarted || fieldSize == Size.Zero) return@LaunchedEffect
 
         var lastFrame = 0L
-        var wasBonusActive = false
-
-        while (!gameState.isGameOver) {
+        while (!viewModel.uiState.value.isGameOver) {
             withFrameNanos { now ->
                 if (lastFrame == 0L) lastFrame = now
                 val deltaSec = ((now - lastFrame) / 1_000_000_000f)
                     .coerceAtMost(0.05f)
                 lastFrame = now
-
-                gameState.currentTilt = tiltState.value
-
-                if (gameState.isBonusActive && !wasBonusActive) {
-                    // Играем звук
-                    mediaPlayer?.release()
-                    mediaPlayer = MediaPlayer.create(context, R.raw.bug_scream)
-                    mediaPlayer?.start()
-                }
-                wasBonusActive = gameState.isBonusActive
-
-
-                gameState.update(deltaSec, fieldSize)
-
-                score = gameState.score
-                timeLeft = gameState.timeLeft
-                bugsSnapshot = gameState.bugs.toList()
-                tick++
+                viewModel.update(deltaSec, fieldSize, tiltState.value)
             }
         }
+    }
 
-        finalScore = gameState.score
-        onGameOver(gameState.score)
+    LaunchedEffect(uiState.isGameOver) {
+        if (uiState.isGameOver) {
+            onGameOver(uiState.score)
+        }
+    }
+
+    val bug1 = ImageBitmap.imageResource(R.drawable.bug1)
+    val bug2 = ImageBitmap.imageResource(R.drawable.bug2)
+    val bug3 = ImageBitmap.imageResource(R.drawable.bug3)
+    val bug4 = ImageBitmap.imageResource(R.drawable.bug4)
+    val golden = ImageBitmap.imageResource(R.drawable.golden)
+    val bugBitmaps: Map<Int, ImageBitmap> = remember {
+        mapOf(
+            R.drawable.bug1 to bug1,
+            R.drawable.bug2 to bug2,
+            R.drawable.bug3 to bug3,
+            R.drawable.bug4 to bug4,
+            R.drawable.golden to golden
+        )
     }
 
     Box(
@@ -160,26 +133,25 @@ fun GameScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "Очки: $score",
+                    text = "Очки: ${uiState.score}",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Время: ${timeLeft.toInt()} с",
+                    text = "Время: ${uiState.timeLeft.toInt()} с",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (timeLeft < 10f) Color.Red else Color.Unspecified
+                    color = if (uiState.timeLeft < 10f) Color.Red else Color.Unspecified
                 )
             }
 
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .pointerInput(Unit) {
+                    .pointerInput(uiState.gameStarted, uiState.isGameOver) {
                         detectTapGestures { offset ->
-                            if (gameStarted && !gameState.isGameOver) {
-                                gameState.onTap(offset)
-                                score = gameState.score
+                            if (uiState.gameStarted && !uiState.isGameOver) {
+                                viewModel.onTap(offset)
                             }
                         }
                     }
@@ -195,13 +167,11 @@ fun GameScreen(
                         .fillMaxSize()
                         .onSizeChanged { fieldSize = it.toSize() }
                 ) {
-                    @Suppress("UNUSED_EXPRESSION")
-                    tick
-                    bugsSnapshot.forEach { bug ->
+                    uiState.bugs.forEach { bug ->
                         val bmp = bugBitmaps[bug.imageRes] ?: bugBitmaps.values.first()
                         drawBug(bug, bmp)
                     }
-                    gameState.bonusPosition?.let { pos ->
+                    uiState.bonusPosition?.let { pos ->
                         drawCircle(
                             color = Color.Yellow,
                             radius = 40f,
@@ -209,7 +179,7 @@ fun GameScreen(
                         )
                     }
                 }
-                if (gameState.isBonusActive) {
+                if (uiState.isBonusActive) {
                     Surface(
                         modifier = Modifier
                             .align(Alignment.TopCenter)
@@ -225,7 +195,7 @@ fun GameScreen(
                         )
                     }
                 }
-                if (!gameStarted || finalScore != null) {
+                if (!uiState.gameStarted || uiState.isGameOver) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -234,20 +204,17 @@ fun GameScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            if (finalScore != null) {
+                            if (uiState.isGameOver) {
                                 Text(
                                     text = "Игра окончена!",
                                     fontSize = 28.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = "Ваш счёт: $finalScore",
+                                    text = "Ваш счёт: ${uiState.score}",
                                     fontSize = 22.sp
                                 )
-                                Button(onClick = {
-                                    finalScore = null
-                                    gameStarted = false
-                                }) {
+                                Button(onClick = { viewModel.resetGame() }) {
                                     Text("Сыграть ещё раз")
                                 }
                             } else {
@@ -261,8 +228,9 @@ fun GameScreen(
                                     fontSize = 16.sp
                                 )
                                 Text(
-                                    text = "Золотой жук (каждые 20 с): +${gameState.goldBugPoints} очков" +
-                                            (goldRate?.let { " · золото ЦБ: %.2f ₽/г".format(it) } ?: " · курс недоступен"),
+                                    text = "Золотой жук (каждые 20 с): +${uiState.goldBugPoints} очков" +
+                                            (uiState.goldRate?.let { " · золото ЦБ: %.2f ₽/г".format(it) }
+                                                ?: " · курс недоступен"),
                                     fontSize = 14.sp,
                                     color = Color.Yellow
                                 )
@@ -273,7 +241,12 @@ fun GameScreen(
                                         color = Color.Yellow,
                                         fontWeight = FontWeight.Bold
                                     )
-                                    Button(onClick = { gameStarted = true }) {
+                                    Button(
+                                        onClick = {
+                                            viewModel.startGame(settings, playerName, fieldSize)
+                                        },
+                                        enabled = fieldSize != Size.Zero
+                                    ) {
                                         Text("Начать игру")
                                     }
                                 } else {
@@ -284,10 +257,7 @@ fun GameScreen(
                                         textAlign = TextAlign.Center,
                                         fontWeight = FontWeight.Bold
                                     )
-                                    Button(
-                                        onClick = { },
-                                        enabled = false
-                                    ) {
+                                    Button(onClick = {}, enabled = false) {
                                         Text("Начать игру")
                                     }
                                 }
