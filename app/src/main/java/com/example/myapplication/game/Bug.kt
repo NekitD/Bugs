@@ -11,7 +11,8 @@ data class Bug(
     val baseVelocity: Offset,
     val size: Float = 100f,
     @DrawableRes val imageRes: Int,
-    var alive: Boolean = true
+    var alive: Boolean = true,
+    val isGold: Boolean = false
 ) {
     fun update(dsec: Float, bounds: Size, speed: Float) {
         if (!alive) return

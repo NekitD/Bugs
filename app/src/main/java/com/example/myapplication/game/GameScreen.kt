@@ -48,6 +48,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.material3.Surface
 import androidx.compose.ui.text.style.TextAlign
+import com.example.myapplication.gold.GoldRepository
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.ColorFilter
 
 @Composable
 fun GameScreen(
@@ -62,6 +65,11 @@ fun GameScreen(
     var finalScore by remember { mutableStateOf<Int?>(null) }
 
     val tiltState = rememberTiltState()
+    var goldRate by remember { mutableStateOf<Double?>(null) }
+    LaunchedEffect(Unit) {
+        goldRate = GoldRepository.fetchGoldRate(context)
+    }
+    gameState.goldRate = goldRate
     var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
     DisposableEffect(Unit) {
         onDispose {
@@ -75,12 +83,14 @@ fun GameScreen(
     val bug2Bitmap = ImageBitmap.imageResource(R.drawable.bug2)
     val bug3Bitmap = ImageBitmap.imageResource(R.drawable.bug3)
     val bug4Bitmap = ImageBitmap.imageResource(R.drawable.bug4)
+    val goldenBitmap = ImageBitmap.imageResource(R.drawable.golden)
     val bugBitmaps: Map<Int, ImageBitmap> = remember {
         mapOf(
             R.drawable.bug1 to bug1Bitmap,
             R.drawable.bug2 to bug2Bitmap,
             R.drawable.bug3 to bug3Bitmap,
-            R.drawable.bug4 to bug4Bitmap
+            R.drawable.bug4 to bug4Bitmap,
+            R.drawable.golden to goldenBitmap
         )
     }
 
@@ -250,8 +260,13 @@ fun GameScreen(
                                     text = "Нажимайте на жуков: +3 очка\nПромах: −1 очко",
                                     fontSize = 16.sp
                                 )
+                                Text(
+                                    text = "Золотой жук (каждые 20 с): +${gameState.goldBugPoints} очков" +
+                                            (goldRate?.let { " · золото ЦБ: %.2f ₽/г".format(it) } ?: " · курс недоступен"),
+                                    fontSize = 14.sp,
+                                    color = Color.Yellow
+                                )
                                 if (playerName != null) {
-                                    // Игрок выбран — можно играть
                                     Text(
                                         text = "Игрок: $playerName",
                                         fontSize = 16.sp,
@@ -262,7 +277,6 @@ fun GameScreen(
                                         Text("Начать игру")
                                     }
                                 } else {
-                                    // Игрок не выбран — показываем предупреждение
                                     Text(
                                         text = "Сначала выберите игрока\nво вкладке «Вход»",
                                         fontSize = 16.sp,

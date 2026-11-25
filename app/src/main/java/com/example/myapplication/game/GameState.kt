@@ -16,6 +16,14 @@ class GameState(private val settings: SettingsData) {
     private var bonusTimer: Float = 15f
     private var bonusActiveTimer: Float = 0f
 
+    var goldRate: Double? = null
+
+    val goldBugPoints: Int
+        get() = ((goldRate ?: 0.0) / 100.0).toInt().coerceAtLeast(1)
+
+    private val goldInterval = 20f
+    private var goldTimer: Float = goldInterval
+
     var currentTilt: Offset = Offset.Zero
 
     fun start(bounds: Size) {
@@ -23,6 +31,7 @@ class GameState(private val settings: SettingsData) {
             spawnBug(bounds, Random.nextInt(4))
         }
         bonusTimer = 15f
+        goldTimer = goldInterval
     }
 
     fun onTap(tap: Offset): Boolean {
@@ -31,7 +40,6 @@ class GameState(private val settings: SettingsData) {
         bonusPosition?.let { pos ->
             val bonusSize = 100f
             if (tap.x in pos.x..(pos.x + bonusSize) && tap.y in pos.y..(pos.y + bonusSize)) {
-                // Активируем бонус
                 isBonusActive = true
                 bonusActiveTimer = 5f
                 bonusPosition = null
@@ -39,10 +47,11 @@ class GameState(private val settings: SettingsData) {
             }
         }
 
-        val hit = bugs.firstOrNull { it.alive && it.contains(tap) }
+        val hit = bugs.firstOrNull { it.alive && it.isGold && it.contains(tap) }
+            ?: bugs.firstOrNull { it.alive && it.contains(tap) }
         if (hit != null) {
             hit.alive = false
-            score += 3
+            score += if (hit.isGold) goldBugPoints else 3
             return true
         } else {
             if (score > 0) score -= 1
@@ -85,8 +94,14 @@ class GameState(private val settings: SettingsData) {
         }
         wasBonusActive = isBonusActive
 
+        goldTimer -= dsec
+        if (goldTimer <= 0f) {
+            spawnGoldBug(bounds)
+            goldTimer = goldInterval
+        }
+
         spawnTimer -= dsec
-        val alive = bugs.count { it.alive }
+        val alive = bugs.count { it.alive && !it.isGold }
         if (spawnTimer <= 0f && alive < settings.maxBugs) {
             spawnBug(bounds, Random.nextInt(4))
             spawnTimer = 1f / settings.gameSpeed
@@ -153,6 +168,28 @@ class GameState(private val settings: SettingsData) {
             initialVelocity,
             bugSize,
             image
+        )
+    }
+
+    private fun spawnGoldBug(bounds: Size) {
+        // Старый золотой (если его не поймали) заменяется новым — они не копятся
+        bugs.removeAll { it.isGold }
+
+        val angle = Random.nextFloat() * 2f * Math.PI.toFloat()
+        val speed = 300f
+        val bugSize = 120f
+        val x = Random.nextFloat() * (bounds.width - bugSize)
+        val y = Random.nextFloat() * (bounds.height - bugSize)
+        val v = Offset(cos(angle) * speed, sin(angle) * speed)
+
+        bugs += Bug(
+            nextId++,
+            Offset(x, y),
+            v,
+            v,
+            bugSize,
+            com.example.myapplication.R.drawable.golden,
+            isGold = true
         )
     }
 }
