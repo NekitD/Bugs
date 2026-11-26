@@ -65,10 +65,7 @@ object GoldRepository {
             val from = fmt.format(cal.time)
 
             val bytes = api.getMetals(from, to).use { it.bytes() }
-            Log.d(TAG, "Ответ: ${bytes.size} байт, начало: " +
-                    String(bytes, charset("windows-1251")).take(300))
             val rate = parseGold(bytes.inputStream())
-            Log.d(TAG, "Разобранный курс: $rate")
             if (rate != null) {
                 context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
                     .edit { putString(KEY_RATE, rate.toString()) }

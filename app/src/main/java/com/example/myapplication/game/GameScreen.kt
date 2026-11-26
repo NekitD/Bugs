@@ -243,7 +243,7 @@ fun GameScreen(
                                     )
                                     Button(
                                         onClick = {
-                                            viewModel.startGame(settings, playerName, fieldSize)
+                                            viewModel.startGame(settings, fieldSize)
                                         },
                                         enabled = fieldSize != Size.Zero
                                     ) {

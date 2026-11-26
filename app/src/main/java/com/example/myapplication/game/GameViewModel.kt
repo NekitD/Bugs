@@ -16,7 +16,7 @@ class GameViewModel : ViewModel() {
     private var gameState: GameState? = null
     private var goldRate: Double? = null
 
-    fun startGame(settings: SettingsData, playerName: String?, fieldSize: Size) {
+    fun startGame(settings: SettingsData, fieldSize: Size) {
         gameState = GameState(settings).apply {
             this.goldRate = this@GameViewModel.goldRate
             start(fieldSize)
@@ -51,7 +51,7 @@ class GameViewModel : ViewModel() {
 
     fun setGoldRate(rate: Double?) {
         goldRate = rate
-        gameState?.goldRate = rate   // если игра уже идёт — обновим и там
+        gameState?.goldRate = rate
         _uiState.value = _uiState.value.copy(
             goldRate = rate,
             goldBugPoints = gameState?.goldBugPoints ?: _uiState.value.goldBugPoints
