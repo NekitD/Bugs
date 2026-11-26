@@ -172,7 +172,6 @@ class GameState(private val settings: SettingsData) {
     }
 
     private fun spawnGoldBug(bounds: Size) {
-        // Старый золотой (если его не поймали) заменяется новым — они не копятся
         bugs.removeAll { it.isGold }
 
         val angle = Random.nextFloat() * 2f * Math.PI.toFloat()
